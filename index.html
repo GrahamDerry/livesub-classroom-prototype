@@ -48,50 +48,97 @@
         .sidebar.open {
             transform: translateX(0);
         }
+        
+        /* Fix the main layout to prevent overflow */
+        .main-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Important: allows flex children to shrink */
+            padding: 1.5rem;
+            padding-bottom: 2rem; /* Extra bottom padding for breathing room */
+        }
+        
+        .transcript-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Important: allows flex children to shrink */
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Ensure transcript container has proper height and scrolling */
+        #transcriptContainer {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0; /* Important: allows flex children to shrink */
+        }
+        
+        /* Smooth scrolling for all browsers */
+        #transcriptContainer {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
-<body class="bg-gray-50 h-screen overflow-hidden">
-    <!-- Top Bar -->
-    <div class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-            <h1 class="text-xl font-bold text-gray-800">LiveSub Classroom</h1>
-            <span class="text-sm text-gray-500">EFL Teaching Assistant</span>
-        </div>
-        
-        <div class="flex items-center space-x-3">
-            <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Start
-            </button>
-            <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors" disabled>
-                Pause Display
-            </button>
-            <button id="clearBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Clear Screen
-            </button>
-            <button id="downloadBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                Download .txt
-            </button>
-        </div>
-    </div>
-
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col h-full">
-        <!-- Live Caption Area -->
-        <div id="captionArea" class="bg-white shadow-lg mx-6 mt-6 p-8 rounded-lg flex items-center justify-center min-h-32">
-            <div id="liveCaption" class="caption-text text-gray-800 text-center">
-                Click "Start" to begin speech recognition...
+<body class="bg-gray-50">
+    <div class="main-container">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-xl font-bold text-gray-800">LiveSub Classroom</h1>
+                <span class="text-sm text-gray-500">EFL Teaching Assistant</span>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    Start
+                </button>
+                <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors" disabled>
+                    Pause Display
+                </button>
+                <button id="clearBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    Clear Screen
+                </button>
+                <button id="downloadBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    Download .txt
+                </button>
             </div>
         </div>
 
-        <!-- Transcript Area -->
-        <div class="flex-1 mx-6 mt-6 bg-white shadow-lg rounded-lg overflow-hidden">
-            <div class="bg-gray-50 px-6 py-3 border-b">
-                <h2 class="text-lg font-semibold text-gray-700">Transcript</h2>
-                <span id="lineCount" class="text-sm text-gray-500">0 lines</span>
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Live Caption Area -->
+            <div id="captionArea" class="bg-white shadow-lg p-8 rounded-lg flex items-center justify-center min-h-32 flex-shrink-0">
+                <div id="liveCaption" class="caption-text text-gray-800 text-center">
+                    Click "Start" to begin speech recognition...
+                </div>
             </div>
-            <div id="transcriptContainer" class="h-full overflow-y-auto p-6">
-                <div id="transcriptContent" class="space-y-2">
-                    <!-- Transcript lines will be added here -->
+
+            <!-- Transcript Area -->
+            <div class="transcript-wrapper">
+                <div class="bg-gray-50 px-6 py-3 border-b flex items-center justify-between flex-shrink-0">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-700">Transcript</h2>
+                        <span id="lineCount" class="text-sm text-gray-500">0 lines</span>
+                    </div>
+                    <div class="text-xs text-gray-400">
+                        Scroll up to read history • Auto-scrolls to new content
+                    </div>
+                </div>
+                <div id="transcriptContainer" class="p-6">
+                    <div id="transcriptContent" class="space-y-1">
+                        <!-- Transcript lines will be added here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -142,6 +189,6 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="../src/main.js"></script>
+    <script type="module" src="src/main.js"></script>
 </body>
-</html> 
+</html>
