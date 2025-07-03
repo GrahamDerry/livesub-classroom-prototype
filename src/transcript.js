@@ -7,6 +7,7 @@ export class TranscriptManager {
     constructor() {
         this.lines = [];
         this.maxLines = 500;
+        this.scrollBuffer = 40; // Buffer space in pixels below the last line
         this.transcriptContent = document.getElementById('transcriptContent');
         this.liveCaption = document.getElementById('liveCaption');
         this.lineCount = document.getElementById('lineCount');
@@ -272,7 +273,7 @@ export class TranscriptManager {
     }
 
     /**
-     * Scroll transcript to the bottom
+     * Scroll transcript to the bottom with buffer space
      */
     scrollToBottom() {
         if (!this.transcriptContainer) {
@@ -282,21 +283,26 @@ export class TranscriptManager {
 
         const scrollHeight = this.transcriptContainer.scrollHeight;
         const clientHeight = this.transcriptContainer.clientHeight;
-        const newScrollTop = scrollHeight - clientHeight;
+        
+        // Calculate scroll position with buffer - scroll to leave buffer space below last line
+        const maxScrollTop = scrollHeight - clientHeight;
+        const targetScrollTop = Math.max(0, maxScrollTop - this.scrollBuffer);
 
-        console.log('Scrolling to bottom:', {
+        console.log('Scrolling to bottom with buffer:', {
             scrollHeight,
             clientHeight,
-            newScrollTop,
+            maxScrollTop,
+            buffer: this.scrollBuffer,
+            targetScrollTop,
             currentScrollTop: this.transcriptContainer.scrollTop
         });
 
         // Use scrollTop directly for immediate scrolling
-        this.transcriptContainer.scrollTop = newScrollTop;
+        this.transcriptContainer.scrollTop = targetScrollTop;
         
         // Also try smooth scroll as backup
         this.transcriptContainer.scrollTo({
-            top: newScrollTop,
+            top: targetScrollTop,
             behavior: 'smooth'
         });
     }
@@ -310,14 +316,15 @@ export class TranscriptManager {
     }
 
     /**
-     * Check if user is at the bottom of the transcript
+     * Check if user is at the bottom of the transcript (considering buffer)
      * @returns {boolean} True if at bottom
      */
     isAtBottom() {
         if (!this.transcriptContainer) return true;
         
         const { scrollTop, scrollHeight, clientHeight } = this.transcriptContainer;
-        const threshold = 100; // pixels from bottom - increased threshold
+        // Consider user "at bottom" if they're within buffer + threshold of the actual bottom
+        const threshold = this.scrollBuffer + 50; // Buffer plus additional threshold
         
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - threshold;
         
@@ -325,6 +332,7 @@ export class TranscriptManager {
             scrollTop,
             clientHeight,
             scrollHeight,
+            buffer: this.scrollBuffer,
             threshold,
             isAtBottom
         });
@@ -343,7 +351,25 @@ export class TranscriptManager {
             scrollTop: this.transcriptContainer.scrollTop,
             scrollHeight: this.transcriptContainer.scrollHeight,
             clientHeight: this.transcriptContainer.clientHeight,
+            buffer: this.scrollBuffer,
             isAtBottom: this.isAtBottom()
         };
+    }
+
+    /**
+     * Set the scroll buffer size
+     * @param {number} bufferPixels - Buffer size in pixels
+     */
+    setScrollBuffer(bufferPixels) {
+        this.scrollBuffer = Math.max(0, bufferPixels);
+        console.log('Scroll buffer set to:', this.scrollBuffer, 'pixels');
+    }
+
+    /**
+     * Get the current scroll buffer size
+     * @returns {number} Buffer size in pixels
+     */
+    getScrollBuffer() {
+        return this.scrollBuffer;
     }
 }
