@@ -37,12 +37,20 @@ export class TranscriptManager {
      */
     addTestButton() {
         console.log('Adding test button, hostname:', window.location.hostname);
+        console.log('Port:', window.location.port);
+        console.log('Protocol:', window.location.protocol);
         
-        // Always add in development (not just localhost)
+        // Enhanced development environment detection
         const isDev = window.location.hostname === 'localhost' || 
                      window.location.hostname === '127.0.0.1' ||
                      window.location.port === '3000' ||
-                     window.location.protocol === 'file:';
+                     window.location.protocol === 'file:' ||
+                     window.location.hostname.includes('webcontainer') ||
+                     window.location.hostname.includes('local-credentialless') ||
+                     window.location.hostname.includes('stackblitz') ||
+                     window.location.hostname.includes('bolt.new') ||
+                     // Always show in development for testing
+                     true; // Force enable for now
         
         console.log('Is development environment:', isDev);
         
@@ -50,9 +58,15 @@ export class TranscriptManager {
             // Find the header div that contains the line count
             const headerDiv = this.lineCount?.parentElement;
             if (headerDiv) {
+                // Check if test buttons already exist
+                if (headerDiv.querySelector('.test-buttons-container')) {
+                    console.log('Test buttons already exist');
+                    return;
+                }
+                
                 // Create a container for the test button
                 const testContainer = document.createElement('div');
-                testContainer.className = 'flex items-center space-x-2 mt-2';
+                testContainer.className = 'test-buttons-container flex items-center space-x-2 mt-2';
                 
                 const testBtn = document.createElement('button');
                 testBtn.textContent = 'Add Test Line';
@@ -64,14 +78,40 @@ export class TranscriptManager {
                 clearBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors';
                 clearBtn.onclick = () => this.clear();
                 
+                const scrollTestBtn = document.createElement('button');
+                scrollTestBtn.textContent = 'Test Scroll';
+                scrollTestBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors';
+                scrollTestBtn.onclick = () => this.testScrolling();
+                
                 testContainer.appendChild(testBtn);
                 testContainer.appendChild(clearBtn);
+                testContainer.appendChild(scrollTestBtn);
                 headerDiv.appendChild(testContainer);
                 
                 console.log('Test buttons added successfully');
             } else {
                 console.error('Could not find header div to add test button');
+                console.log('lineCount element:', this.lineCount);
+                console.log('lineCount parent:', this.lineCount?.parentElement);
             }
+        }
+    }
+
+    /**
+     * Test scrolling behavior by adding multiple lines quickly
+     */
+    testScrolling() {
+        console.log('Testing scrolling behavior...');
+        
+        // Add 10 lines quickly to test auto-scroll
+        for (let i = 1; i <= 10; i++) {
+            setTimeout(() => {
+                this.addTestLine();
+                if (i === 10) {
+                    console.log('Scroll test completed');
+                    console.log('Final scroll info:', this.getScrollInfo());
+                }
+            }, i * 200); // 200ms delay between each line
         }
     }
 
