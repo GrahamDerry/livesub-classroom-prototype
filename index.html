@@ -48,6 +48,18 @@
         .sidebar.open {
             transform: translateX(0);
         }
+        
+        /* Ensure transcript container has proper height and scrolling */
+        #transcriptContainer {
+            height: calc(100vh - 300px); /* Adjust based on your layout */
+            min-height: 300px;
+            max-height: 600px;
+        }
+        
+        /* Smooth scrolling for all browsers */
+        #transcriptContainer {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="bg-gray-50 h-screen overflow-hidden">
@@ -84,13 +96,18 @@
         </div>
 
         <!-- Transcript Area -->
-        <div class="flex-1 mx-6 mt-6 bg-white shadow-lg rounded-lg overflow-hidden">
-            <div class="bg-gray-50 px-6 py-3 border-b">
-                <h2 class="text-lg font-semibold text-gray-700">Transcript</h2>
-                <span id="lineCount" class="text-sm text-gray-500">0 lines</span>
+        <div class="flex-1 mx-6 mt-6 mb-6 bg-white shadow-lg rounded-lg overflow-hidden flex flex-col">
+            <div class="bg-gray-50 px-6 py-3 border-b flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-700">Transcript</h2>
+                    <span id="lineCount" class="text-sm text-gray-500">0 lines</span>
+                </div>
+                <div class="text-xs text-gray-400">
+                    Scroll up to read history • Auto-scrolls to new content
+                </div>
             </div>
-            <div id="transcriptContainer" class="h-full overflow-y-auto p-6">
-                <div id="transcriptContent" class="space-y-2">
+            <div id="transcriptContainer" class="flex-1 overflow-y-auto p-6">
+                <div id="transcriptContent" class="space-y-1">
                     <!-- Transcript lines will be added here -->
                 </div>
             </div>
@@ -142,6 +159,6 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="../src/main.js"></script>
+    <script type="module" src="src/main.js"></script>
 </body>
-</html> 
+</html>
