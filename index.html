@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveSub Classroom - EFL Teaching Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'caption': ['Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .caption-text {
+            font-size: 3rem;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .transcript-line {
+            transition: all 0.3s ease;
+        }
+        .transcript-line:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .word-clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .word-clickable:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        .popover {
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .sidebar {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden">
+    <!-- Top Bar -->
+    <div class="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-xl font-bold text-gray-800">LiveSub Classroom</h1>
+            <span class="text-sm text-gray-500">EFL Teaching Assistant</span>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+            <button id="startBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Start
+            </button>
+            <button id="pauseBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors" disabled>
+                Pause Display
+            </button>
+            <button id="clearBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Clear Screen
+            </button>
+            <button id="downloadBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                Download .txt
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-full">
+        <!-- Live Caption Area -->
+        <div id="captionArea" class="bg-white shadow-lg mx-6 mt-6 p-8 rounded-lg flex items-center justify-center min-h-32">
+            <div id="liveCaption" class="caption-text text-gray-800 text-center">
+                Click "Start" to begin speech recognition...
+            </div>
+        </div>
+
+        <!-- Transcript Area -->
+        <div class="flex-1 mx-6 mt-6 bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="bg-gray-50 px-6 py-3 border-b">
+                <h2 class="text-lg font-semibold text-gray-700">Transcript</h2>
+                <span id="lineCount" class="text-sm text-gray-500">0 lines</span>
+            </div>
+            <div id="transcriptContainer" class="h-full overflow-y-auto p-6">
+                <div id="transcriptContent" class="space-y-2">
+                    <!-- Transcript lines will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebarToggle" class="fixed bottom-6 right-6 bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-full shadow-lg transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar fixed top-0 right-0 h-full w-80 bg-white shadow-xl border-l">
+        <div class="bg-purple-500 text-white px-6 py-4 flex items-center justify-between">
+            <h2 class="text-lg font-semibold">My Words</h2>
+            <button id="closeSidebar" class="text-white hover:text-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="savedWords" class="p-6 overflow-y-auto h-full">
+            <!-- Saved words will be displayed here -->
+        </div>
+    </div>
+
+    <!-- Translation Popover -->
+    <div id="translationPopover" class="popover fixed hidden bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-xs">
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <div class="font-medium text-gray-900 mb-2">
+                    <span id="popoverWord"></span>
+                </div>
+                <div id="popoverTranslation" class="text-gray-600 mb-3">
+                    Loading translation...
+                </div>
+                <button id="saveWordBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                    Save Word
+                </button>
+            </div>
+            <button id="closePopover" class="text-gray-400 hover:text-gray-600 ml-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="../src/main.js"></script>
+</body>
+</html> 
