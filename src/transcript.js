@@ -28,24 +28,49 @@ export class TranscriptManager {
         
         this.updateLineCount();
         
-        // Add test button for debugging
-        this.addTestButton();
+        // Add test button for debugging - wait for DOM to be ready
+        setTimeout(() => this.addTestButton(), 100);
     }
 
     /**
      * Add a test button to simulate transcript lines for debugging
      */
     addTestButton() {
-        // Only add in development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            const testBtn = document.createElement('button');
-            testBtn.textContent = 'Add Test Line';
-            testBtn.className = 'bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm ml-2';
-            testBtn.onclick = () => this.addTestLine();
-            
-            const lineCountElement = document.getElementById('lineCount');
-            if (lineCountElement && lineCountElement.parentNode) {
-                lineCountElement.parentNode.appendChild(testBtn);
+        console.log('Adding test button, hostname:', window.location.hostname);
+        
+        // Always add in development (not just localhost)
+        const isDev = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' ||
+                     window.location.port === '3000' ||
+                     window.location.protocol === 'file:';
+        
+        console.log('Is development environment:', isDev);
+        
+        if (isDev) {
+            // Find the header div that contains the line count
+            const headerDiv = this.lineCount?.parentElement;
+            if (headerDiv) {
+                // Create a container for the test button
+                const testContainer = document.createElement('div');
+                testContainer.className = 'flex items-center space-x-2 mt-2';
+                
+                const testBtn = document.createElement('button');
+                testBtn.textContent = 'Add Test Line';
+                testBtn.className = 'bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors';
+                testBtn.onclick = () => this.addTestLine();
+                
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = 'Clear Test';
+                clearBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors';
+                clearBtn.onclick = () => this.clear();
+                
+                testContainer.appendChild(testBtn);
+                testContainer.appendChild(clearBtn);
+                headerDiv.appendChild(testContainer);
+                
+                console.log('Test buttons added successfully');
+            } else {
+                console.error('Could not find header div to add test button');
             }
         }
     }
@@ -64,12 +89,20 @@ export class TranscriptManager {
             "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
             "Duis aute irure dolor in reprehenderit in voluptate velit esse.",
             "Excepteur sint occaecat cupidatat non proident, sunt in culpa.",
-            "Qui officia deserunt mollit anim id est laborum et dolorum."
+            "Qui officia deserunt mollit anim id est laborum et dolorum.",
+            "The quick brown fox jumps over the lazy dog repeatedly.",
+            "Testing auto-scroll functionality with this longer message.",
+            "Another line to fill up the transcript area completely.",
+            "Keep adding lines to test the scrolling behavior thoroughly.",
+            "This should help us see if the auto-scroll is working properly."
         ];
         
         const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)];
         const timestamp = new Date().toLocaleTimeString();
-        this.addLine(`[${timestamp}] ${randomMessage}`);
+        const lineNumber = this.lines.length + 1;
+        this.addLine(`[Line ${lineNumber}] [${timestamp}] ${randomMessage}`);
+        
+        console.log('Test line added, total lines:', this.lines.length);
     }
 
     /**
@@ -82,6 +115,10 @@ export class TranscriptManager {
         if (!cleanText) return;
 
         console.log('Adding line to transcript:', cleanText);
+
+        // Check if user was at bottom before adding new content
+        const wasAtBottom = this.isAtBottom();
+        console.log('User was at bottom:', wasAtBottom);
 
         // Add to lines array
         this.lines.push(cleanText);
@@ -102,10 +139,15 @@ export class TranscriptManager {
         // Update line count
         this.updateLineCount();
         
-        // Scroll to bottom with a small delay to ensure DOM is updated
-        requestAnimationFrame(() => {
-            this.scrollToBottom();
-        });
+        // Only auto-scroll if user was at bottom (don't interrupt manual scrolling)
+        if (wasAtBottom) {
+            // Scroll to bottom with a small delay to ensure DOM is updated
+            requestAnimationFrame(() => {
+                this.scrollToBottom();
+            });
+        } else {
+            console.log('Not auto-scrolling because user was not at bottom');
+        }
     }
 
     /**
@@ -114,7 +156,7 @@ export class TranscriptManager {
      */
     createTranscriptLine(text) {
         const lineElement = document.createElement('div');
-        lineElement.className = 'transcript-line p-2 rounded border-b border-gray-100';
+        lineElement.className = 'transcript-line p-3 rounded border-b border-gray-100 hover:bg-gray-50 transition-colors';
         
         // Split text into words and make each clickable
         const words = text.split(/\s+/);
@@ -136,7 +178,7 @@ export class TranscriptManager {
         lineElement.append(...wordElements);
         this.transcriptContent.appendChild(lineElement);
         
-        console.log('Line element added to DOM, total lines:', this.transcriptContent.children.length);
+        console.log('Line element added to DOM, total DOM children:', this.transcriptContent.children.length);
     }
 
     /**
@@ -200,25 +242,23 @@ export class TranscriptManager {
 
         const scrollHeight = this.transcriptContainer.scrollHeight;
         const clientHeight = this.transcriptContainer.clientHeight;
-        const scrollTop = scrollHeight - clientHeight;
+        const newScrollTop = scrollHeight - clientHeight;
 
         console.log('Scrolling to bottom:', {
             scrollHeight,
             clientHeight,
-            scrollTop,
+            newScrollTop,
             currentScrollTop: this.transcriptContainer.scrollTop
         });
 
-        // Smooth scroll to bottom
+        // Use scrollTop directly for immediate scrolling
+        this.transcriptContainer.scrollTop = newScrollTop;
+        
+        // Also try smooth scroll as backup
         this.transcriptContainer.scrollTo({
-            top: scrollTop,
+            top: newScrollTop,
             behavior: 'smooth'
         });
-
-        // Fallback for browsers that don't support smooth scrolling
-        setTimeout(() => {
-            this.transcriptContainer.scrollTop = scrollTop;
-        }, 100);
     }
 
     /**
@@ -237,9 +277,19 @@ export class TranscriptManager {
         if (!this.transcriptContainer) return true;
         
         const { scrollTop, scrollHeight, clientHeight } = this.transcriptContainer;
-        const threshold = 50; // pixels from bottom
+        const threshold = 100; // pixels from bottom - increased threshold
         
-        return scrollTop + clientHeight >= scrollHeight - threshold;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - threshold;
+        
+        console.log('Checking if at bottom:', {
+            scrollTop,
+            clientHeight,
+            scrollHeight,
+            threshold,
+            isAtBottom
+        });
+        
+        return isAtBottom;
     }
 
     /**
