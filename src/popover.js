@@ -46,7 +46,7 @@ export class PopoverManager {
             
             // Update save button state
             this.updateSaveButton();
-        } catch (error) {
+        } catch {
             this.popoverTranslation.textContent = 'Translation unavailable';
             this.currentTranslation = '';
         }

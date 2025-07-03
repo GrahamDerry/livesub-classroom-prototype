@@ -4,7 +4,7 @@ import { TranscriptManager } from './transcript.js';
 import { Translator } from './translator.js';
 import { SidebarManager } from './sidebar.js';
 import { PopoverManager } from './popover.js';
-import { downloadFile, debounce } from './utils.js';
+import { downloadFile } from './utils.js';
 
 /**
  * Main application class that coordinates all components
@@ -294,7 +294,10 @@ class LiveSubApp {
 
         // Close popover when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('#translationPopover') && !e.target.closest('.word-clickable')) {
+            const target = e.target;
+            if (!target || !(target instanceof Node)) return;
+            
+            if (!this.popover?.contains(target) && !(target instanceof HTMLElement && target.classList.contains('word-clickable'))) {
                 this.popover.hide();
             }
         });
