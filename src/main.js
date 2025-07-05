@@ -6,6 +6,9 @@ import { SidebarManager } from './sidebar.js';
 import { PopoverManager } from './popover.js';
 import { downloadFile } from './utils.js';
 
+// @ts-ignore - Add captionSocket to window object
+window.captionSocket = window.captionSocket || null;
+
 /**
  * Main application class that coordinates all components
  */
@@ -13,6 +16,7 @@ class LiveSubApp {
     constructor() {
         this.isRecording = false;
         this.isPaused = false;
+        this.isRestarting = false;
         this.recognition = null;
         this.currentInterimText = '';
         
@@ -55,6 +59,7 @@ class LiveSubApp {
 
         this.recognition.onstart = () => {
             console.log('Speech recognition started');
+            this.isRestarting = false;
             this.updateUI('recording');
         };
 
@@ -65,21 +70,25 @@ class LiveSubApp {
         this.recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             if (event.error === 'no-speech' || event.error === 'audio-capture') {
-                // Auto-restart on common errors
-                setTimeout(() => {
-                    if (this.isRecording) {
-                        this.restartRecognition();
-                    }
-                }, 1000);
+                // Auto-restart on common errors, but only if not already restarting
+                if (!this.isRestarting && this.isRecording) {
+                    setTimeout(() => {
+                        if (this.isRecording && !this.isRestarting) {
+                            this.restartRecognition();
+                        }
+                    }, 1000);
+                }
             }
         };
 
         this.recognition.onend = () => {
             console.log('Speech recognition ended');
-            // Auto-restart if we're still supposed to be recording
-            if (this.isRecording) {
+            // Auto-restart if we're still supposed to be recording and not already restarting
+            if (this.isRecording && !this.isRestarting) {
                 setTimeout(() => {
-                    this.restartRecognition();
+                    if (this.isRecording && !this.isRestarting) {
+                        this.restartRecognition();
+                    }
                 }, 100);
             } else {
                 this.updateUI('stopped');
@@ -121,6 +130,14 @@ class LiveSubApp {
      * Restart speech recognition after an error
      */
     restartRecognition() {
+        if (this.isRestarting) {
+            console.log('Already restarting, skipping...');
+            return;
+        }
+        
+        this.isRestarting = true;
+        console.log('Restarting speech recognition...');
+        
         try {
             this.recognition.stop();
         } catch {
@@ -128,8 +145,16 @@ class LiveSubApp {
         }
         
         setTimeout(() => {
-            if (this.isRecording) {
-                this.recognition.start();
+            if (this.isRecording && this.isRestarting) {
+                try {
+                    this.recognition.start();
+                    console.log('Speech recognition restart started');
+                } catch (error) {
+                    console.error('Error restarting speech recognition:', error);
+                    this.isRestarting = false;
+                }
+            } else {
+                this.isRestarting = false;
             }
         }, 100);
     }

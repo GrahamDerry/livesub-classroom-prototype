@@ -189,6 +189,60 @@ export class TranscriptManager {
         } else {
             console.log('Not auto-scrolling because user was not at bottom');
         }
+
+        /* --- WebSocket broadcast --- */
+        // Prevent duplicate messages with a simple debounce
+        const now = Date.now();
+        if (window.lastBroadcastTime && (now - window.lastBroadcastTime) < 100) {
+            console.log("Skipping message too soon after last broadcast:", cleanText);
+            return;
+        }
+        window.lastBroadcastTime = now;
+        
+        // @ts-ignore
+        if (!window.captionSocket) {
+            const wsUrl = `ws://${location.hostname}:3000`;
+            console.log('Creating WebSocket connection to:', wsUrl);
+            console.log('Current location:', location.href);
+            // @ts-ignore
+            window.captionSocket = new WebSocket(wsUrl);
+            // @ts-ignore
+            window.captionSocket.addEventListener('close', () => {
+                console.warn('WS closed – captions will retry on next open');
+            });
+            // @ts-ignore
+            window.captionSocket.addEventListener('open', () => {
+                console.log('WebSocket connected successfully');
+            });
+            // @ts-ignore
+            window.captionSocket.addEventListener('error', (error) => {
+                console.error('WebSocket error:', error);
+                console.error('WebSocket error details:', error.type, error.target?.readyState);
+            });
+        }
+
+        // @ts-ignore
+        if (window.captionSocket && window.captionSocket.readyState === 1) {
+            const message = JSON.stringify({ type: 'caption', line: cleanText, ts: Date.now() });
+            // @ts-ignore
+            window.captionSocket.send(message);
+            console.log("Broadcasting caption via WebSocket:", cleanText, "at", new Date().toISOString());
+        } else {
+            console.log("WebSocket not ready, readyState:", window.captionSocket?.readyState);
+            // Try again after a short delay if still connecting
+            if (window.captionSocket?.readyState === 0) {
+                setTimeout(() => {
+                    // @ts-ignore
+                    if (window.captionSocket && window.captionSocket.readyState === 1) {
+                        // @ts-ignore
+                        window.captionSocket.send(
+                            JSON.stringify({ type: 'caption', line: cleanText, ts: Date.now() })
+                        );
+                        console.log("Broadcasting caption via WebSocket (delayed):", cleanText);
+                    }
+                }, 100);
+            }
+        }
     }
 
     /**
