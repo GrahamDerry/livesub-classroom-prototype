@@ -123,7 +123,7 @@ class LiveSubApp {
     restartRecognition() {
         try {
             this.recognition.stop();
-        } catch (e) {
+        } catch {
             // Ignore errors when stopping
         }
         
