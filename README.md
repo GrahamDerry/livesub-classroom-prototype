@@ -1,16 +1,23 @@
-# LiveSub Classroom - Weekend Prototype
+# LiveSub Classroom - Multi-Device Caption Broadcast System
 
-A single-page web application for EFL (English as a Foreign Language) teaching that provides real-time speech-to-text captions with Thai translations. Perfect for classroom use with projector or screen sharing.
+A real-time caption broadcast system for classroom use that provides speech-to-text captions from a teacher's device to multiple student devices via WebSocket. Perfect for EFL (English as a Foreign Language) teaching with projector or screen sharing.
 
 ## Features
 
-### 🎤 Real-time Speech Recognition
+### 🎤 Real-time Speech Recognition & Broadcasting
 - Uses Chrome's Web Speech API for continuous speech-to-text
-- Large, prominent live captions for classroom visibility
+- WebSocket-based real-time caption broadcasting
+- Teacher device captures speech and broadcasts to all connected students
 - Automatic reconnection on network glitches
 - Pause/resume functionality for better control
 
-### 📝 Interactive Transcript
+### 📱 Multi-Device Support
+- **Teacher Interface**: Full-featured caption creation and management
+- **Student Interface**: Clean, dedicated view for receiving captions
+- **Real-time Sync**: Captions appear instantly on all student devices
+- **Reconnection Logic**: Students automatically reconnect if connection is lost
+
+### 📝 Interactive Transcript (Teacher)
 - Scrollable transcript with newest content at bottom
 - Click any word to get instant Thai translation
 - Automatic line management (keeps last 500 lines)
@@ -36,42 +43,78 @@ A single-page web application for EFL (English as a Foreign Language) teaching t
 
 ## Quick Start
 
-### Option 1: Development Server (Recommended)
-```bash
-# Install dependencies
-npm install
+### Development Setup (Recommended)
 
-# Start development server
-npm run dev
-```
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-The app will open automatically at `http://localhost:3000`
+2. **Start the WebSocket server (backend):**
+   ```bash
+   npm run dev:server
+   ```
+   This starts the Express server with WebSocket support on port 3000.
 
-### Option 2: Direct File Access
-Simply open `public/index.html` in Chrome (v115+)
+3. **Start the development server (frontend):**
+   ```bash
+   npx vite --port 3001
+   ```
+   This starts the Vite dev server on port 3001.
 
-## Browser Requirements
+4. **Access the applications:**
+   - **Teacher Interface**: `http://localhost:3001/`
+   - **Student Interface**: `http://localhost:3001/student.html`
 
-- **Chrome v115+** (required for Web Speech API)
-- Microphone permissions
-- Internet connection (for translations)
+### Production Setup
+
+1. **Build the application:**
+   ```bash
+   npm run build
+   ```
+
+2. **Start the production server:**
+   ```bash
+   npm start
+   ```
+
+3. **Access the applications:**
+   - **Teacher Interface**: `http://localhost:3000/`
+   - **Student Interface**: `http://localhost:3000/student.html`
+
+## System Architecture
+
+### Server Setup
+- **Express Server** (Port 3000): WebSocket server + static file hosting
+- **Vite Dev Server** (Port 3001): Development server with hot reload
+- **WebSocket Protocol**: Real-time communication between teacher and students
+
+### Client Setup
+- **Teacher Device**: Runs the main application with speech recognition
+- **Student Devices**: Run the student interface to receive captions
+- **WebSocket Connection**: All clients connect to `ws://localhost:3000`
 
 ## Usage
 
-### Basic Operation
-1. **Start**: Click "Start" button to begin speech recognition
-2. **Speak**: Your speech appears as live captions and in the transcript
-3. **Pause**: Use "Pause Display" to freeze captions temporarily
-4. **Clear**: "Clear Screen" removes all transcript content
-5. **Download**: Export transcript as a text file
+### Teacher Setup
+1. **Open Teacher Interface**: Navigate to `http://localhost:3001/`
+2. **Start Recording**: Click "Start" to begin speech recognition
+3. **Speak**: Your speech appears as live captions and broadcasts to students
+4. **Manage**: Use pause, clear, and download features as needed
 
-### Translation Features
+### Student Setup
+1. **Open Student Interface**: Navigate to `http://localhost:3001/student.html`
+2. **Automatic Connection**: Students automatically connect to the WebSocket server
+3. **Receive Captions**: Captions appear in real-time as the teacher speaks
+4. **Reconnection**: If connection is lost, students automatically reconnect
+
+### Translation Features (Teacher Only)
 1. **Click Words**: Click any word in the transcript
 2. **View Translation**: Thai translation appears in a popover
 3. **Save Words**: Click "Save Word" to add to your vocabulary list
 4. **Access Vocabulary**: Use the purple sidebar button to view saved words
 
-### Keyboard Shortcuts
+### Keyboard Shortcuts (Teacher)
 - `Ctrl/Cmd + Enter`: Start/Stop recording
 - `Ctrl/Cmd + P`: Pause/Resume display
 - `Ctrl/Cmd + C`: Clear screen
@@ -81,6 +124,7 @@ Simply open `public/index.html` in Chrome (v115+)
 ## Technical Details
 
 ### Architecture
+- **Backend**: Express.js with WebSocket (ws) for real-time communication
 - **Frontend**: Vanilla JavaScript with ES modules
 - **Build Tool**: Vite for fast development
 - **Styling**: Tailwind CSS (CDN)
@@ -90,19 +134,28 @@ Simply open `public/index.html` in Chrome (v115+)
 
 ### File Structure
 ```
-├── public/
-│   └── index.html          # Main HTML file
+├── server/
+│   └── index.js           # Express + WebSocket server
 ├── src/
-│   ├── main.js            # Application entry point
-│   ├── transcript.js      # Transcript management
+│   ├── main.js            # Teacher application entry point
+│   ├── student.js         # Student interface
+│   ├── transcript.js      # Transcript management + WebSocket
 │   ├── translator.js      # Translation API integration
 │   ├── sidebar.js         # Vocabulary sidebar
 │   ├── popover.js         # Translation popover
 │   └── utils.js           # Utility functions
+├── student.html           # Student interface HTML
+├── index.html             # Teacher interface HTML
 ├── package.json           # Dependencies and scripts
 ├── vite.config.js         # Vite configuration
 └── tsconfig.json          # TypeScript configuration
 ```
+
+### WebSocket Communication
+- **Message Format**: JSON with `{type: 'caption', line: text, ts: timestamp}`
+- **Broadcasting**: Teacher sends captions, server relays to all students
+- **Reconnection**: Exponential backoff with max 16-second delays
+- **Error Handling**: Graceful handling of connection issues
 
 ### API Integration
 - **LibreTranslate**: `https://libretranslate.de/translate`
@@ -110,12 +163,18 @@ Simply open `public/index.html` in Chrome (v115+)
 - **Caching**: In-memory LRU cache (200 entries)
 - **Error Handling**: Graceful fallbacks for network issues
 
+## Browser Requirements
+
+- **Chrome v115+** (required for Web Speech API)
+- Microphone permissions (teacher device only)
+- Internet connection (for translations)
+
 ## Known Limitations
 
 ### Current Prototype
 - **Browser Support**: Chrome only (Web Speech API limitation)
 - **Network Dependency**: Requires internet for translations
-- **Single Device**: No multi-device synchronization
+- **Local Network**: Designed for local network use
 - **Audio Quality**: Depends on microphone quality
 - **Translation Accuracy**: Uses free LibreTranslate service
 
@@ -127,25 +186,24 @@ Simply open `public/index.html` in Chrome (v115+)
 
 ## Next Steps
 
-### Pilot Phase (Multi-device)
-- **WebSocket Integration**: Real-time broadcast to student devices
-- **Student Interface**: Dedicated view for student screens
-- **Device Synchronization**: Coordinated captions across devices
-- **Network Resilience**: Offline mode and reconnection logic
-
-### Beta Phase (Production Ready)
+### Production Features
 - **Google Cloud Speech**: Replace Web Speech API for better accuracy
 - **Authentication**: User accounts and session management
 - **Firestore Integration**: Cloud-based vocabulary storage
 - **Analytics**: Usage tracking and performance metrics
 - **Multi-language**: Support for additional languages
 
-### OSS Launch
+### Deployment Features
 - **Docker Deployment**: Containerized application
-- **Documentation**: Comprehensive setup and usage guides
-- **Educator Tools**: Classroom setup scripts and templates
-- **Community Features**: Shared vocabulary lists and resources
-- **Mobile Support**: Progressive Web App capabilities
+- **Cloud Hosting**: Scalable deployment options
+- **SSL Support**: Secure WebSocket connections
+- **Load Balancing**: Multiple server instances
+
+### Advanced Features
+- **Room Management**: Multiple classrooms/channels
+- **Offline Mode**: PWA capabilities for offline use
+- **Mobile Support**: Progressive Web App features
+- **Recording**: Save and replay caption sessions
 
 ## Development
 
@@ -162,6 +220,19 @@ The project is configured for TypeScript migration:
 4. Test thoroughly in Chrome
 5. Submit a pull request
 
+## Troubleshooting
+
+### Common Issues
+- **WebSocket Connection Failed**: Ensure the Express server is running on port 3000
+- **Speech Recognition Not Working**: Check microphone permissions in Chrome
+- **Captions Not Broadcasting**: Verify both teacher and student are connected to WebSocket
+- **Translation Errors**: Check internet connection and LibreTranslate service status
+
+### Debug Mode
+- Open browser console to see WebSocket connection status
+- Check server logs for connection and message relay information
+- Verify ports are not in use by other applications
+
 ## License
 
 MIT License - see LICENSE file for details
@@ -169,11 +240,12 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues and questions:
-- Check browser compatibility
-- Ensure microphone permissions are granted
+- Check browser compatibility (Chrome v115+)
+- Ensure microphone permissions are granted (teacher device)
 - Verify internet connection for translations
 - Review console for error messages
+- Check WebSocket connection status
 
 ---
 
-**Built for EFL educators** - Making language learning more accessible and interactive! 🎓 
+**Built for EFL educators** - Making language learning more accessible and interactive with real-time multi-device caption broadcasting! 🎓 
