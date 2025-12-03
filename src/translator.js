@@ -1,19 +1,40 @@
 // @ts-check
 
 /**
- * Manages translation requests to LibreTranslate API with caching
+ * Manages translation requests to MyMemory API with caching
  */
 export class Translator {
     constructor() {
         this.cache = new Map();
         this.maxCacheSize = 200;
-        this.apiEndpoint = 'https://libretranslate.de/translate';
-        this.rateLimitDelay = 1000; // 1 second between requests
+        this.apiEndpoint = 'https://api.mymemory.translated.net/get';
+        this.rateLimitDelay = 500; // 500ms between requests (MyMemory is more lenient)
         this.lastRequestTime = 0;
+        this.targetLanguage = 'th'; // Default to Thai
     }
 
     /**
-     * Translate text from English to Thai
+     * Set the target language for translation
+     * @param {string} lang - Language code ('th' for Thai, 'zh' for Chinese)
+     */
+    setTargetLanguage(lang) {
+        if (this.targetLanguage !== lang) {
+            this.targetLanguage = lang;
+            this.clearCache(); // Clear cache when language changes
+            console.log(`Translation language changed to: ${lang}`);
+        }
+    }
+
+    /**
+     * Get the current target language
+     * @returns {string} Current target language code
+     */
+    getTargetLanguage() {
+        return this.targetLanguage;
+    }
+
+    /**
+     * Translate text from English to target language
      * @param {string} text - Text to translate
      * @returns {Promise<string>} Translated text
      */
@@ -50,24 +71,22 @@ export class Translator {
     }
 
     /**
-     * Fetch translation from LibreTranslate API
+     * Fetch translation from MyMemory API
      * @param {string} text - Text to translate
      * @returns {Promise<string>} Translated text
      */
     async fetchTranslation(text) {
         this.lastRequestTime = Date.now();
 
-        const response = await fetch(this.apiEndpoint, {
-            method: 'POST',
+        // MyMemory API uses GET request with query parameters
+        const langPair = `en|${this.targetLanguage}`;
+        const url = `${this.apiEndpoint}?q=${encodeURIComponent(text)}&langpair=${encodeURIComponent(langPair)}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                q: text,
-                source: 'en',
-                target: 'th',
-                format: 'text'
-            })
+                'Accept': 'application/json',
+            }
         });
 
         if (!response.ok) {
@@ -79,11 +98,11 @@ export class Translator {
 
         const data = await response.json();
         
-        if (data.error) {
-            throw new Error(data.error);
+        if (data.responseStatus !== 200) {
+            throw new Error(data.responseDetails || 'Translation failed');
         }
 
-        return data.translatedText || 'Translation unavailable';
+        return data.responseData?.translatedText || 'Translation unavailable';
     }
 
     /**

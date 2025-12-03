@@ -1,0 +1,71 @@
+# LiveSub Classroom - Cursor AI Instructions
+
+This is a real-time caption broadcast system for classroom use. Teachers speak into their laptop microphone and captions are broadcast to student phones via WebSocket.
+
+## Project Overview
+
+- **Teacher Interface**: `index.html` / `src/main.js` - Speech recognition + caption display
+- **Student Interface**: `student.html` / `src/student.js` - Receives and displays captions
+- **Backend Server**: `server/index.js` - Express + WebSocket relay server
+- **Build Tool**: Vite
+
+## How to Start the App for Classroom Use
+
+When the user asks to "start the app", "run the classroom", "start LiveSub", or similar:
+
+1. **First, run the backend server:**
+   ```bash
+   npm run dev:server
+   ```
+   This starts the Express/WebSocket server on port 3000.
+
+2. **Then, run the frontend dev server with network access:**
+   ```bash
+   npx vite --port 3001 --host
+   ```
+   The `--host` flag is REQUIRED so student phones on the same WiFi can connect.
+
+3. **Tell the user:**
+   - Open http://localhost:3001/ in Chrome (teacher view)
+   - Click the "📱 QR Code" button to show the student connection QR code
+   - Students scan the QR code to connect from their phones
+   - Click "Start" to begin speech recognition and caption broadcasting
+
+## Important Notes
+
+- **Chrome is required** for the teacher interface (Web Speech API)
+- **Both servers must run simultaneously** (backend on 3000, frontend on 3001)
+- **The `--host` flag on Vite is essential** for phones to connect over the local network
+- Student pages are served from port 3000 (the Express server) in production
+- During development, the QR code automatically detects the computer's network IP
+
+## Common Commands
+
+- `npm install` - Install dependencies
+- `npm run dev:server` - Start WebSocket server (port 3000)
+- `npx vite --port 3001 --host` - Start dev server with network access
+- `npm run build` - Build for production
+- `npm start` - Run production server
+
+## File Structure
+
+```
+server/index.js     - Express + WebSocket server
+src/main.js         - Teacher app entry point
+src/student.js      - Student app
+src/transcript.js   - Transcript management + WebSocket broadcasting
+src/qrcode.js       - QR code generation for student connections
+src/translator.js   - Translation API integration
+index.html          - Teacher interface
+student.html        - Student interface
+```
+
+## Troubleshooting
+
+- **Phones can't connect?** Make sure Vite is running with `--host` flag
+- **QR code shows localhost?** The server needs to detect the network IP - check server logs
+- **Blank page on phone?** Run `npm run build` to ensure dist/ has latest files
+- **Speech recognition not working?** Must use Chrome and grant microphone permission
+
+
+

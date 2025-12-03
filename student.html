@@ -7,10 +7,22 @@
       content="width=device-width,initial-scale=1,maximum-scale=1"
     />
     <title>LiveSub – Student</title>
-    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        min-height: 100vh;
+      }
+      .caption-line {
+        animation: fadeIn 0.3s ease-in;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
   </head>
-  <body class="bg-slate-900 text-white text-2xl leading-tight p-4" id="app">
-    <!-- Lines append here -->
+  <body class="bg-slate-900 text-white text-2xl leading-tight p-6" id="app">
+    <div class="text-gray-500 text-lg mb-4" id="status">Connecting to teacher...</div>
     <script type="module" src="/src/student.js"></script>
   </body>
 </html> 

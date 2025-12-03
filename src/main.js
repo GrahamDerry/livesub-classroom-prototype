@@ -4,6 +4,7 @@ import { TranscriptManager } from './transcript.js';
 import { Translator } from './translator.js';
 import { SidebarManager } from './sidebar.js';
 import { PopoverManager } from './popover.js';
+import { QRCodeManager } from './qrcode.js';
 import { downloadFile } from './utils.js';
 
 // @ts-ignore - Add captionSocket to window object
@@ -25,6 +26,7 @@ class LiveSubApp {
         this.translator = new Translator();
         this.sidebar = new SidebarManager();
         this.popover = new PopoverManager(this.translator, this.sidebar);
+        this.qrCode = new QRCodeManager();
         
         this.initializeSpeechRecognition();
         this.bindEvents();
@@ -310,6 +312,22 @@ class LiveSubApp {
         document.getElementById('closeSidebar').addEventListener('click', () => {
             this.sidebar.close();
         });
+
+        // QR Code button
+        document.getElementById('qrBtn').addEventListener('click', () => {
+            this.qrCode.show();
+        });
+
+        // Translation language selector
+        const langSelect = document.getElementById('translationLang');
+        if (langSelect) {
+            langSelect.addEventListener('change', (e) => {
+                const target = e.target;
+                if (target instanceof HTMLSelectElement) {
+                    this.translator.setTargetLanguage(target.value);
+                }
+            });
+        }
 
         // Handle word clicks from transcript
         document.addEventListener('wordClick', (e) => {
