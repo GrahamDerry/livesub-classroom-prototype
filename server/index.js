@@ -7,58 +7,52 @@ import os from 'os';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, '../dist');
 
-// Helper to get local network IP
+/**
+ * Get the local network IP address (for LAN access from phones)
+ */
 function getLocalIP() {
-  try {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-      for (const iface of interfaces[name]) {
-        // Skip internal and non-IPv4 addresses
-        if (iface.family === 'IPv4' && !iface.internal) {
-          return iface.address;
-        }
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name] || []) {
+      // Skip internal/loopback and non-IPv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
       }
     }
-  } catch (err) {
-    console.warn('Could not detect network interfaces:', err.message);
   }
   return 'localhost';
 }
 
 const app = express();
 
-// Enable CORS for development (Vite on port 3001 needs to reach this server)
+// Enable CORS for dev server on different port
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
 
 app.use(express.static(DIST_DIR));
 
-// API endpoint to get connection info for QR code generation
+// API endpoint for QR code to get the student connection URL
 app.get('/api/connection-info', (req, res) => {
-  const ip = getLocalIP();
+  const localIP = getLocalIP();
   const port = httpServer.address().port;
+  const studentUrl = `http://${localIP}:${port}/student.html`;
+  
+  console.log(`Connection info requested. Student URL: ${studentUrl}`);
+  
   res.json({
-    ip,
-    port,
-    studentUrl: `http://${ip}:${port}/student.html`,
-    wsUrl: `ws://${ip}:${port}`
+    studentUrl,
+    ip: localIP,
+    port
   });
 });
 
 const httpServer = app.listen(process.env.PORT || 3000, () => {
-  const ip = getLocalIP();
-  const port = httpServer.address().port;
-  console.log(`HTTP listening on ${port}`);
-  console.log(`Local: http://localhost:${port}/`);
-  console.log(`Network: http://${ip}:${port}/`);
-  console.log(`Student URL: http://${ip}:${port}/student.html`);
+  const localIP = getLocalIP();
+  console.log(`HTTP listening on ${httpServer.address().port}`);
+  console.log(`Student URL for phones: http://${localIP}:${httpServer.address().port}/student.html`);
 });
 
 const wss = new WebSocketServer({ server: httpServer });

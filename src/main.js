@@ -20,6 +20,14 @@ class LiveSubApp {
         this.isRestarting = false;
         this.recognition = null;
         this.currentInterimText = '';
+        this.recognitionLang = 'en-US';
+        
+        // Direction texts in different languages
+        this.directionTexts = {
+            'en-US': 'Click "Start" to begin speech recognition...',
+            'th-TH': 'คลิก "Start" เพื่อเริ่มการรู้จำเสียง...',
+            'zh-CN': '点击 "Start" 开始语音识别...'
+        };
         
         // Initialize components
         this.transcript = new TranscriptManager();
@@ -57,7 +65,7 @@ class LiveSubApp {
         }
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
-        this.recognition.lang = 'en-US';
+        this.recognition.lang = this.recognitionLang;
 
         this.recognition.onstart = () => {
             console.log('Speech recognition started');
@@ -209,6 +217,34 @@ class LiveSubApp {
     }
 
     /**
+     * Set the recognition language
+     * @param {string} langCode - The language code (e.g., 'en-US', 'th-TH', 'zh-CN')
+     */
+    setRecognitionLanguage(langCode) {
+        this.recognitionLang = langCode;
+        
+        // Update the recognition object's language
+        if (this.recognition) {
+            this.recognition.lang = langCode;
+        }
+        
+        // Update the directions text if not currently recording
+        if (!this.isRecording) {
+            const liveCaption = document.getElementById('liveCaption');
+            if (liveCaption) {
+                liveCaption.textContent = this.directionTexts[langCode] || this.directionTexts['en-US'];
+            }
+        }
+        
+        // If currently recording, restart to apply the new language
+        if (this.isRecording) {
+            this.restartRecognition();
+        }
+        
+        console.log('Recognition language set to:', langCode);
+    }
+
+    /**
      * Clear all transcript content
      */
     clearTranscript() {
@@ -265,7 +301,7 @@ class LiveSubApp {
                 if (pauseBtn instanceof HTMLButtonElement) {
                     pauseBtn.disabled = true;
                 }
-                liveCaption.textContent = 'Click "Start" to begin speech recognition...';
+                liveCaption.textContent = this.directionTexts[this.recognitionLang] || this.directionTexts['en-US'];
                 break;
             case 'paused':
                 if (pauseBtn instanceof HTMLButtonElement) {
@@ -325,6 +361,17 @@ class LiveSubApp {
                 const target = e.target;
                 if (target instanceof HTMLSelectElement) {
                     this.translator.setTargetLanguage(target.value);
+                }
+            });
+        }
+
+        // Recognition language selector
+        const recognitionLangSelect = document.getElementById('recognitionLang');
+        if (recognitionLangSelect) {
+            recognitionLangSelect.addEventListener('change', (e) => {
+                const target = e.target;
+                if (target instanceof HTMLSelectElement) {
+                    this.setRecognitionLanguage(target.value);
                 }
             });
         }

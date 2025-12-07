@@ -58,9 +58,9 @@ A real-time caption broadcast system for classroom use that provides speech-to-t
 
 3. **Start the development server (frontend):**
    ```bash
-   npx vite --port 3001
+   npx vite --port 3001 --host
    ```
-   This starts the Vite dev server on port 3001.
+   This starts the Vite dev server on port 3001. The `--host` flag is **required** so student phones on the same WiFi network can connect.
 
 4. **Access the applications:**
    - **Teacher Interface**: `http://localhost:3001/`
@@ -223,6 +223,7 @@ The project is configured for TypeScript migration:
 ## Troubleshooting
 
 ### Common Issues
+- **Student Phones Can't Connect**: Make sure Vite is running with the `--host` flag: `npx vite --port 3001 --host`
 - **WebSocket Connection Failed**: Ensure the Express server is running on port 3000
 - **Speech Recognition Not Working**: Check microphone permissions in Chrome
 - **Captions Not Broadcasting**: Verify both teacher and student are connected to WebSocket
