@@ -32,9 +32,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(DIST_DIR));
-
-// API endpoint for QR code to get the student connection URL
+// API endpoint for QR code to get the student connection URL (BEFORE static)
 app.get('/api/connection-info', (req, res) => {
   const localIP = getLocalIP();
   const port = httpServer.address().port;
@@ -48,6 +46,9 @@ app.get('/api/connection-info', (req, res) => {
     port
   });
 });
+
+// Serve static files from dist
+app.use(express.static(DIST_DIR));
 
 const httpServer = app.listen(process.env.PORT || 3000, () => {
   const localIP = getLocalIP();

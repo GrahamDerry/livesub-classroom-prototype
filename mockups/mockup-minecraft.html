@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveSub Classroom - Minecraft Style Mockup</title>
+    <style>
+        /* Minecraft-style font */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('https://fonts.cdnfonts.com/css/minecraft-4');
+        }
+        
+        * {
+            box-sizing: border-box;
+            image-rendering: pixelated;
+        }
+        
+        :root {
+            --dirt-brown: #8B5A2B;
+            --dirt-dark: #5D3A1A;
+            --grass-green: #5D8C3E;
+            --grass-top: #7CB342;
+            --stone-gray: #7F7F7F;
+            --stone-dark: #5A5A5A;
+            --wood-brown: #9C6B30;
+            --wood-dark: #6B4423;
+            --chalk-green: #2D4A3E;
+            --chalk-dark: #1A2E26;
+            --chalk-frame: #6B4423;
+            --text-white: #FFFFFF;
+            --text-shadow: #3F3F3F;
+            --hotbar-bg: #8B8B8B;
+            --slot-bg: #373737;
+            --slot-border: #1E1E1E;
+            --highlight: #55FF55;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 18px;
+            min-height: 100vh;
+            background: 
+                /* Sky gradient */
+                linear-gradient(180deg, 
+                    #7BA4D9 0%, 
+                    #9FC5E8 60%,
+                    #C9E4CA 100%
+                );
+            overflow-x: hidden;
+        }
+        
+        /* Pixelated text shadow like Minecraft */
+        .mc-text {
+            color: var(--text-white);
+            text-shadow: 2px 2px 0 var(--text-shadow);
+            letter-spacing: 1px;
+        }
+        
+        .mc-text-dark {
+            color: #3F3F3F;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+        }
+        
+        /* Main container - classroom scene */
+        .classroom {
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Top bar styled like Minecraft inventory header */
+        .top-bar {
+            background: linear-gradient(180deg, #C6C6C6 0%, #8B8B8B 100%);
+            border: 4px solid #373737;
+            box-shadow: 
+                inset 4px 4px 0 rgba(255,255,255,0.3),
+                inset -4px -4px 0 rgba(0,0,0,0.3),
+                0 4px 0 #1E1E1E;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .title-section h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #3F3F3F;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+        }
+        
+        .title-section .subtitle {
+            font-size: 14px;
+            color: #5A5A5A;
+        }
+        
+        /* Minecraft-style buttons */
+        .mc-btn {
+            background: linear-gradient(180deg, #999 0%, #777 100%);
+            border: 3px solid #1E1E1E;
+            box-shadow: 
+                inset 2px 2px 0 rgba(255,255,255,0.4),
+                inset -2px -2px 0 rgba(0,0,0,0.4);
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            color: var(--text-white);
+            text-shadow: 2px 2px 0 var(--text-shadow);
+            cursor: pointer;
+            transition: all 0.05s;
+        }
+        
+        .mc-btn:hover {
+            background: linear-gradient(180deg, #A9D9A9 0%, #6B9B6B 100%);
+        }
+        
+        .mc-btn:active {
+            box-shadow: 
+                inset -2px -2px 0 rgba(255,255,255,0.4),
+                inset 2px 2px 0 rgba(0,0,0,0.4);
+            transform: translate(1px, 1px);
+        }
+        
+        .mc-btn:disabled {
+            background: linear-gradient(180deg, #666 0%, #444 100%);
+            color: #888;
+            cursor: not-allowed;
+        }
+        
+        .mc-btn-primary {
+            background: linear-gradient(180deg, #5C9C5C 0%, #3D7A3D 100%);
+        }
+        
+        .mc-btn-primary:hover {
+            background: linear-gradient(180deg, #7CBC7C 0%, #5C9C5C 100%);
+        }
+        
+        .mc-btn-danger {
+            background: linear-gradient(180deg, #C95050 0%, #8B3030 100%);
+        }
+        
+        .mc-btn-danger:hover {
+            background: linear-gradient(180deg, #E97070 0%, #C95050 100%);
+        }
+        
+        /* Minecraft-style select */
+        .mc-select {
+            background: linear-gradient(180deg, #555 0%, #333 100%);
+            border: 3px solid #1E1E1E;
+            box-shadow: 
+                inset 2px 2px 0 rgba(255,255,255,0.2),
+                inset -2px -2px 0 rgba(0,0,0,0.4);
+            padding: 6px 28px 6px 10px;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-white);
+            text-shadow: 1px 1px 0 var(--text-shadow);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 4 L6 8 L10 4' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-group label {
+            color: #3F3F3F;
+            font-size: 14px;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+        
+        .controls-section {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        /* Chalkboard frame */
+        .chalkboard-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .chalkboard {
+            background: 
+                /* Chalk dust texture */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent 0px,
+                    transparent 4px,
+                    rgba(255,255,255,0.02) 4px,
+                    rgba(255,255,255,0.02) 8px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent 0px,
+                    transparent 4px,
+                    rgba(255,255,255,0.01) 4px,
+                    rgba(255,255,255,0.01) 8px
+                ),
+                /* Base green chalkboard */
+                linear-gradient(180deg, 
+                    #2D5A4A 0%, 
+                    #1E3D32 50%,
+                    #15302A 100%
+                );
+            border: 16px solid var(--wood-brown);
+            border-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    #8B5A2B 0px,
+                    #8B5A2B 8px,
+                    #6B4423 8px,
+                    #6B4423 16px,
+                    #9C6B30 16px,
+                    #9C6B30 24px,
+                    #6B4423 24px,
+                    #6B4423 32px
+                ) 16;
+            box-shadow: 
+                inset 0 0 60px rgba(0,0,0,0.4),
+                8px 8px 0 rgba(0,0,0,0.3);
+            padding: 24px;
+            min-height: 150px;
+        }
+        
+        .chalkboard-caption {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Chalk text effect */
+        .chalk-text {
+            font-family: 'VT323', monospace;
+            font-size: 48px;
+            color: #E8E8E8;
+            text-shadow: 
+                0 0 10px rgba(255,255,255,0.3),
+                2px 2px 0 rgba(0,0,0,0.3);
+            text-align: center;
+            line-height: 1.4;
+            /* Slightly rough chalk look */
+            filter: url(#chalk-texture);
+        }
+        
+        .chalk-text-small {
+            font-size: 24px;
+        }
+        
+        .chalk-text-hint {
+            color: #8BA898;
+            font-size: 28px;
+        }
+        
+        /* Transcript chalkboard */
+        .chalkboard-transcript {
+            flex: 1;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .transcript-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 3px dashed rgba(255,255,255,0.2);
+            margin-bottom: 16px;
+        }
+        
+        .transcript-header h2 {
+            margin: 0;
+            font-size: 28px;
+            color: #FFE4B5;
+            text-shadow: 
+                0 0 10px rgba(255,228,181,0.3),
+                2px 2px 0 rgba(0,0,0,0.3);
+        }
+        
+        .transcript-header .info {
+            font-size: 16px;
+            color: #8BA898;
+        }
+        
+        .transcript-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .transcript-line {
+            padding: 8px 12px;
+            margin: 4px 0;
+            color: #E0E0E0;
+            font-size: 22px;
+            text-shadow: 
+                0 0 8px rgba(255,255,255,0.2),
+                1px 1px 0 rgba(0,0,0,0.3);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.1s;
+        }
+        
+        .transcript-line:hover {
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            color: #FFFF55;
+        }
+        
+        /* Custom scrollbar - Minecraft style */
+        .transcript-content::-webkit-scrollbar {
+            width: 20px;
+        }
+        
+        .transcript-content::-webkit-scrollbar-track {
+            background: #1E1E1E;
+            border: 3px solid #373737;
+        }
+        
+        .transcript-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8B8B8B 0%, #5A5A5A 100%);
+            border: 3px solid #373737;
+        }
+        
+        .transcript-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #9B9B9B 0%, #6A6A6A 100%);
+        }
+        
+        /* Hotbar - bottom toolbar */
+        .hotbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: rgba(0,0,0,0.7);
+            border: 4px solid #1E1E1E;
+        }
+        
+        .hotbar-slot {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(180deg, #555 0%, #333 100%);
+            border: 3px solid #1E1E1E;
+            box-shadow: 
+                inset 2px 2px 0 rgba(255,255,255,0.2),
+                inset -2px -2px 0 rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 28px;
+            transition: all 0.05s;
+            position: relative;
+        }
+        
+        .hotbar-slot:hover {
+            background: linear-gradient(180deg, #666 0%, #444 100%);
+            transform: translateY(-4px);
+        }
+        
+        .hotbar-slot.selected {
+            border-color: #FFFFFF;
+            box-shadow: 
+                inset 2px 2px 0 rgba(255,255,255,0.3),
+                inset -2px -2px 0 rgba(0,0,0,0.5),
+                0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        .hotbar-slot .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1A0A30;
+            border: 2px solid #2D0D50;
+            padding: 6px 12px;
+            white-space: nowrap;
+            font-size: 14px;
+            color: var(--text-white);
+            text-shadow: 1px 1px 0 var(--text-shadow);
+            pointer-events: none;
+            opacity: 0;
+            margin-bottom: 8px;
+            z-index: 100;
+        }
+        
+        .hotbar-slot:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .hotbar-number {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 12px;
+            color: #AAA;
+        }
+        
+        /* Status indicator */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.6);
+            border: 3px solid #373737;
+            padding: 4px 12px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #55FF55;
+            border: 2px solid #1E1E1E;
+            animation: pulse 1s infinite;
+        }
+        
+        .status-dot.inactive {
+            background: #888;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Sidebar - styled as chest inventory */
+        .sidebar {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 300px;
+            background: #C6C6C6;
+            border: 4px solid #373737;
+            box-shadow: 
+                inset 4px 4px 0 rgba(255,255,255,0.3),
+                inset -4px -4px 0 rgba(0,0,0,0.3),
+                8px 8px 0 rgba(0,0,0,0.3);
+            display: none;
+            z-index: 100;
+        }
+        
+        .sidebar.open {
+            display: block;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(180deg, #8B8B8B 0%, #6B6B6B 100%);
+            padding: 10px 16px;
+            border-bottom: 3px solid #373737;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #3F3F3F;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+        
+        .sidebar-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #3F3F3F;
+        }
+        
+        .sidebar-content {
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: #555;
+        }
+        
+        .word-slot {
+            background: linear-gradient(180deg, #666 0%, #444 100%);
+            border: 3px solid #1E1E1E;
+            box-shadow: 
+                inset 2px 2px 0 rgba(255,255,255,0.2),
+                inset -2px -2px 0 rgba(0,0,0,0.5);
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .word-english {
+            color: #FFFF55;
+            font-size: 18px;
+            text-shadow: 1px 1px 0 #3F3F3F;
+            margin-bottom: 4px;
+        }
+        
+        .word-translation {
+            color: #AAFFAA;
+            font-size: 16px;
+            text-shadow: 1px 1px 0 #3F3F3F;
+        }
+        
+        /* Popover - styled as Minecraft tooltip */
+        .popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1A0A30;
+            border: 4px solid #2D0D50;
+            box-shadow: 0 0 0 2px #0F0520;
+            padding: 20px;
+            min-width: 280px;
+            z-index: 200;
+            display: none;
+        }
+        
+        .popover-word {
+            color: #FFFF55;
+            font-size: 28px;
+            text-shadow: 2px 2px 0 #3F3F3F;
+            margin-bottom: 12px;
+        }
+        
+        .popover-translation {
+            color: #AAFFAA;
+            font-size: 22px;
+            text-shadow: 1px 1px 0 #3F3F3F;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #2D0D50;
+        }
+        
+        .popover-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        /* QR Modal */
+        .qr-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #C6C6C6;
+            border: 4px solid #373737;
+            box-shadow: 
+                inset 4px 4px 0 rgba(255,255,255,0.3),
+                inset -4px -4px 0 rgba(0,0,0,0.3),
+                8px 8px 0 rgba(0,0,0,0.4);
+            padding: 0;
+            z-index: 200;
+            display: none;
+        }
+        
+        .qr-header {
+            background: linear-gradient(180deg, #8B8B8B 0%, #6B6B6B 100%);
+            padding: 10px 16px;
+            border-bottom: 3px solid #373737;
+            text-align: center;
+        }
+        
+        .qr-header h3 {
+            margin: 0;
+            color: #3F3F3F;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+        }
+        
+        .qr-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .qr-placeholder {
+            width: 180px;
+            height: 180px;
+            margin: 16px auto;
+            background: 
+                linear-gradient(90deg, #333 50%, transparent 50%),
+                linear-gradient(90deg, #333 50%, transparent 50%),
+                linear-gradient(0deg, #333 50%, transparent 50%),
+                linear-gradient(0deg, #333 50%, transparent 50%),
+                #FFF;
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px, 0 0, 10px 10px;
+            border: 4px solid #1E1E1E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-hint {
+            font-size: 14px;
+            color: #3F3F3F;
+            margin: 12px 0;
+        }
+        
+        /* Block decorations */
+        .block-decoration {
+            position: fixed;
+            width: 64px;
+            height: 64px;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .grass-block {
+            background: 
+                linear-gradient(180deg, 
+                    #7CB342 0%, #7CB342 25%,
+                    #8B5A2B 25%, #8B5A2B 100%
+                );
+            border: 4px solid #1E1E1E;
+            box-shadow: inset -4px -4px 0 rgba(0,0,0,0.3);
+        }
+        
+        /* SVG filter for chalk texture */
+        .svg-filters {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- SVG Filters for chalk effect -->
+    <svg class="svg-filters">
+        <filter id="chalk-texture">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+    </svg>
+
+    <div class="classroom">
+        <!-- Top Bar - Minecraft inventory style -->
+        <div class="top-bar">
+            <div class="title-section">
+                <h1>⛏️ LiveSub Classroom</h1>
+                <span class="subtitle">EFL Teaching Assistant</span>
+                <div class="status-badge mc-text">
+                    <div class="status-dot inactive"></div>
+                    <span>Ready to Mine Knowledge!</span>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="control-group">
+                    <label>Listen for:</label>
+                    <select class="mc-select">
+                        <option>English</option>
+                        <option>Thai (ไทย)</option>
+                        <option>Chinese (中文)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Translate to:</label>
+                    <select class="mc-select">
+                        <option>Thai (ไทย)</option>
+                        <option>Chinese (中文)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chalkboard Area -->
+        <div class="chalkboard-container">
+            <!-- Live Caption Chalkboard -->
+            <div class="chalkboard chalkboard-caption">
+                <div class="chalk-text chalk-text-hint">
+                    Click "Start" to begin speech recognition...
+                </div>
+            </div>
+            
+            <!-- Transcript Chalkboard -->
+            <div class="chalkboard chalkboard-transcript">
+                <div class="transcript-header">
+                    <h2>📜 Transcript</h2>
+                    <span class="info chalk-text-small" style="color: #8BA898;">3 lines • Click words to translate</span>
+                </div>
+                <div class="transcript-content">
+                    <div class="transcript-line">
+                        Hello everyone, welcome to today's English lesson.
+                    </div>
+                    <div class="transcript-line">
+                        Today we're going to learn about vocabulary building.
+                    </div>
+                    <div class="transcript-line">
+                        Please feel free to ask questions at any time.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hotbar - Bottom toolbar -->
+    <div class="hotbar">
+        <div class="hotbar-slot selected" onclick="alert('Starting...')">
+            <span>▶️</span>
+            <span class="hotbar-number">1</span>
+            <div class="tooltip">Start [1]</div>
+        </div>
+        <div class="hotbar-slot">
+            <span>⏸️</span>
+            <span class="hotbar-number">2</span>
+            <div class="tooltip">Pause Display [2]</div>
+        </div>
+        <div class="hotbar-slot">
+            <span>🗑️</span>
+            <span class="hotbar-number">3</span>
+            <div class="tooltip">Clear Screen [3]</div>
+        </div>
+        <div class="hotbar-slot">
+            <span>💾</span>
+            <span class="hotbar-number">4</span>
+            <div class="tooltip">Download .txt [4]</div>
+        </div>
+        <div class="hotbar-slot" onclick="document.getElementById('qrModal').style.display='block'">
+            <span>📱</span>
+            <span class="hotbar-number">5</span>
+            <div class="tooltip">QR Code [5]</div>
+        </div>
+        <div class="hotbar-slot" onclick="toggleSidebar()">
+            <span>📖</span>
+            <span class="hotbar-number">6</span>
+            <div class="tooltip">My Words [6]</div>
+        </div>
+    </div>
+    
+    <!-- Sidebar - Chest inventory style -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>📖 My Words</h3>
+            <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content">
+            <div class="word-slot">
+                <div class="word-english">vocabulary</div>
+                <div class="word-translation">คำศัพท์</div>
+            </div>
+            <div class="word-slot">
+                <div class="word-english">lesson</div>
+                <div class="word-translation">บทเรียน</div>
+            </div>
+            <div class="word-slot">
+                <div class="word-english">questions</div>
+                <div class="word-translation">คำถาม</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Translation Popover -->
+    <div class="popover" id="popover">
+        <div class="popover-word">vocabulary</div>
+        <div class="popover-translation">คำศัพท์ (kam-sap)</div>
+        <div class="popover-buttons">
+            <button class="mc-btn" onclick="hidePopover()">Cancel</button>
+            <button class="mc-btn mc-btn-primary">Save Word</button>
+        </div>
+    </div>
+    
+    <!-- QR Modal -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-header">
+            <h3>📱 Student Connection</h3>
+        </div>
+        <div class="qr-content">
+            <p class="mc-text-dark">Scan to Join the Server!</p>
+            <div class="qr-placeholder">
+                <!-- Placeholder pattern -->
+            </div>
+            <p class="qr-hint">Students: Open camera and scan this code</p>
+            <button class="mc-btn" onclick="hideQR()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        function hidePopover() {
+            document.getElementById('popover').style.display = 'none';
+        }
+        
+        function hideQR() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+        
+        // Show popover when clicking transcript lines
+        document.querySelectorAll('.transcript-line').forEach(line => {
+            line.addEventListener('click', () => {
+                document.getElementById('popover').style.display = 'block';
+            });
+        });
+        
+        // Hotbar slot selection
+        document.querySelectorAll('.hotbar-slot').forEach((slot, index) => {
+            slot.addEventListener('click', () => {
+                document.querySelectorAll('.hotbar-slot').forEach(s => s.classList.remove('selected'));
+                slot.classList.add('selected');
+            });
+        });
+        
+        // Keyboard shortcuts (like Minecraft hotbar)
+        document.addEventListener('keydown', (e) => {
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= 6) {
+                const slots = document.querySelectorAll('.hotbar-slot');
+                document.querySelectorAll('.hotbar-slot').forEach(s => s.classList.remove('selected'));
+                slots[num - 1].classList.add('selected');
+                slots[num - 1].click();
+            }
+        });
+    </script>
+</body>
+</html>
+

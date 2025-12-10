@@ -29,8 +29,77 @@ export class TranscriptManager {
         
         this.updateLineCount();
         
+        // Initialize WebSocket connection early so it's ready when needed
+        this.initWebSocket();
+        
         // Add test button for debugging - wait for DOM to be ready
         setTimeout(() => this.addTestButton(), 100);
+    }
+
+    /**
+     * Initialize WebSocket connection for broadcasting captions
+     */
+    initWebSocket() {
+        // Use 127.0.0.1 to ensure IPv4 connection (localhost may resolve to IPv6)
+        const host = location.hostname === 'localhost' ? '127.0.0.1' : location.hostname;
+        const wsUrl = `ws://${host}:3000`;
+        console.log('Initializing WebSocket connection to:', wsUrl);
+        
+        try {
+            // @ts-ignore
+            window.captionSocket = new WebSocket(wsUrl);
+            
+            // @ts-ignore
+            window.captionSocket.addEventListener('open', () => {
+                console.log('Teacher WebSocket connected successfully');
+            });
+            
+            // @ts-ignore
+            window.captionSocket.addEventListener('close', () => {
+                console.warn('Teacher WebSocket closed - will reconnect on next message');
+                // @ts-ignore
+                window.captionSocket = null;
+            });
+            
+            // @ts-ignore
+            window.captionSocket.addEventListener('error', (error) => {
+                console.error('Teacher WebSocket error:', error);
+            });
+        } catch (error) {
+            console.error('Failed to create WebSocket:', error);
+        }
+    }
+
+    /**
+     * Broadcast a caption to all connected students via WebSocket
+     * @param {string} text - The caption text to broadcast
+     */
+    broadcastCaption(text) {
+        // Reconnect if socket is closed
+        // @ts-ignore
+        if (!window.captionSocket || window.captionSocket.readyState === 3) {
+            console.log('WebSocket not connected, reconnecting...');
+            this.initWebSocket();
+        }
+
+        const message = JSON.stringify({ type: 'caption', line: text, ts: Date.now() });
+
+        // @ts-ignore
+        if (window.captionSocket.readyState === 1) {
+            // Socket is open, send immediately
+            // @ts-ignore
+            window.captionSocket.send(message);
+            console.log('Caption broadcast sent:', text);
+        } else {
+            // Socket is connecting, wait for it to open
+            console.log('WebSocket connecting, queuing message...');
+            // @ts-ignore
+            window.captionSocket.addEventListener('open', () => {
+                // @ts-ignore
+                window.captionSocket.send(message);
+                console.log('Caption broadcast sent (after connect):', text);
+            }, { once: true });
+        }
     }
 
     /**
@@ -191,58 +260,7 @@ export class TranscriptManager {
         }
 
         /* --- WebSocket broadcast --- */
-        // Prevent duplicate messages with a simple debounce
-        const now = Date.now();
-        if (window.lastBroadcastTime && (now - window.lastBroadcastTime) < 100) {
-            console.log("Skipping message too soon after last broadcast:", cleanText);
-            return;
-        }
-        window.lastBroadcastTime = now;
-        
-        // @ts-ignore
-        if (!window.captionSocket) {
-            const wsUrl = `ws://${location.hostname}:3000`;
-            console.log('Creating WebSocket connection to:', wsUrl);
-            console.log('Current location:', location.href);
-            // @ts-ignore
-            window.captionSocket = new WebSocket(wsUrl);
-            // @ts-ignore
-            window.captionSocket.addEventListener('close', () => {
-                console.warn('WS closed – captions will retry on next open');
-            });
-            // @ts-ignore
-            window.captionSocket.addEventListener('open', () => {
-                console.log('WebSocket connected successfully');
-            });
-            // @ts-ignore
-            window.captionSocket.addEventListener('error', (error) => {
-                console.error('WebSocket error:', error);
-                console.error('WebSocket error details:', error.type, error.target?.readyState);
-            });
-        }
-
-        // @ts-ignore
-        if (window.captionSocket && window.captionSocket.readyState === 1) {
-            const message = JSON.stringify({ type: 'caption', line: cleanText, ts: Date.now() });
-            // @ts-ignore
-            window.captionSocket.send(message);
-            console.log("Broadcasting caption via WebSocket:", cleanText, "at", new Date().toISOString());
-        } else {
-            console.log("WebSocket not ready, readyState:", window.captionSocket?.readyState);
-            // Try again after a short delay if still connecting
-            if (window.captionSocket?.readyState === 0) {
-                setTimeout(() => {
-                    // @ts-ignore
-                    if (window.captionSocket && window.captionSocket.readyState === 1) {
-                        // @ts-ignore
-                        window.captionSocket.send(
-                            JSON.stringify({ type: 'caption', line: cleanText, ts: Date.now() })
-                        );
-                        console.log("Broadcasting caption via WebSocket (delayed):", cleanText);
-                    }
-                }, 100);
-            }
-        }
+        this.broadcastCaption(cleanText);
     }
 
     /**
@@ -252,6 +270,10 @@ export class TranscriptManager {
     createTranscriptLine(text) {
         const lineElement = document.createElement('div');
         lineElement.className = 'transcript-line p-3 rounded border-b border-gray-100 hover:bg-gray-50 transition-colors';
+        
+        // Create container for original text
+        const originalTextDiv = document.createElement('div');
+        originalTextDiv.className = 'original-text';
         
         // Split text into words and make each clickable
         const words = text.split(/\s+/);
@@ -270,10 +292,44 @@ export class TranscriptManager {
             return wordElement;
         });
         
-        lineElement.append(...wordElements);
+        originalTextDiv.append(...wordElements);
+        lineElement.appendChild(originalTextDiv);
+        
+        // Create placeholder for translation (initially hidden)
+        const translationDiv = document.createElement('div');
+        translationDiv.className = 'translation-text text-gray-500 text-sm mt-1 italic hidden';
+        translationDiv.dataset.translation = 'pending';
+        lineElement.appendChild(translationDiv);
+        
         this.transcriptContent.appendChild(lineElement);
         
         console.log('Line element added to DOM, total DOM children:', this.transcriptContent.children.length);
+    }
+
+    /**
+     * Update the translation for a specific line element
+     * @param {HTMLElement} lineElement - The transcript line element
+     * @param {string} translation - The translated text
+     */
+    setLineTranslation(lineElement, translation) {
+        const translationDiv = lineElement.querySelector('.translation-text');
+        if (translationDiv && translation) {
+            translationDiv.textContent = translation;
+            translationDiv.classList.remove('hidden');
+            translationDiv.dataset.translation = 'complete';
+        }
+    }
+
+    /**
+     * Get the last transcript line element
+     * @returns {HTMLElement|null} The last line element or null
+     */
+    getLastLineElement() {
+        const children = this.transcriptContent.children;
+        if (children.length > 0) {
+            return /** @type {HTMLElement} */ (children[children.length - 1]);
+        }
+        return null;
     }
 
     /**

@@ -38,6 +38,12 @@
             border-radius: 4px;
             padding: 2px 4px;
         }
+        .translation-text {
+            color: #6B7280;
+            font-style: italic;
+            padding-left: 0.25rem;
+            border-left: 2px solid #D1D5DB;
+        }
         .popover {
             z-index: 1000;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -149,6 +155,7 @@
                 <div class="flex items-center space-x-2">
                     <label for="translationLang" class="text-sm text-gray-600">Translate to:</label>
                     <select id="translationLang" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                        <option value="en">English</option>
                         <option value="th">Thai (ไทย)</option>
                         <option value="zh">Chinese (中文)</option>
                     </select>

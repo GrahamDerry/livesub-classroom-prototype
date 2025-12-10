@@ -28,6 +28,13 @@ class LiveSubApp {
             'th-TH': 'คลิก "Start" เพื่อเริ่มการรู้จำเสียง...',
             'zh-CN': '点击 "Start" 开始语音识别...'
         };
+
+        // Map recognition language codes to translation language codes
+        this.langCodeMap = {
+            'en-US': 'en',
+            'th-TH': 'th',
+            'zh-CN': 'zh'
+        };
         
         // Initialize components
         this.transcript = new TranscriptManager();
@@ -35,6 +42,9 @@ class LiveSubApp {
         this.sidebar = new SidebarManager();
         this.popover = new PopoverManager(this.translator, this.sidebar);
         this.qrCode = new QRCodeManager();
+
+        // Set initial source language based on recognition language
+        this.translator.setSourceLanguage(this.langCodeMap[this.recognitionLang] || 'en');
         
         this.initializeSpeechRecognition();
         this.bindEvents();
@@ -133,6 +143,40 @@ class LiveSubApp {
             this.currentInterimText = '';
             this.transcript.addLine(finalTranscript);
             this.transcript.setLiveText('');
+            
+            // Auto-translate the line (teacher-side only)
+            this.autoTranslateLine(finalTranscript);
+        }
+    }
+
+    /**
+     * Auto-translate a transcript line and display below the original
+     * @param {string} text - The text to translate
+     */
+    async autoTranslateLine(text) {
+        // Skip if source and target languages are the same
+        if (!this.translator.shouldTranslate()) {
+            console.log('Skipping translation: source and target languages are the same');
+            return;
+        }
+
+        // Get the last line element that was just added
+        const lineElement = this.transcript.getLastLineElement();
+        if (!lineElement) {
+            console.error('Could not find last line element for translation');
+            return;
+        }
+
+        try {
+            console.log(`Auto-translating: "${text}" from ${this.translator.getSourceLanguage()} to ${this.translator.getTargetLanguage()}`);
+            const translation = await this.translator.translate(text);
+            
+            if (translation) {
+                this.transcript.setLineTranslation(lineElement, translation);
+                console.log(`Translation complete: "${translation}"`);
+            }
+        } catch (error) {
+            console.error('Auto-translation failed:', error);
         }
     }
 
@@ -227,6 +271,10 @@ class LiveSubApp {
         if (this.recognition) {
             this.recognition.lang = langCode;
         }
+
+        // Update the translator's source language to match
+        const translationLangCode = this.langCodeMap[langCode] || 'en';
+        this.translator.setSourceLanguage(translationLangCode);
         
         // Update the directions text if not currently recording
         if (!this.isRecording) {

@@ -49,25 +49,37 @@ export class QRCodeManager {
       
       // Always fetch from the Express server on port 3000
       // This works in both dev mode (Vite on 3001) and production (Express serves everything)
+      // Use localhost explicitly for the API call since it's same-machine
       const apiBase = window.location.port === '3001' 
-        ? `http://${window.location.hostname}:3000`
+        ? 'http://localhost:3000'
         : '';
       
       try {
+        console.log('Fetching connection info from:', `${apiBase}/api/connection-info`);
         const res = await fetch(`${apiBase}/api/connection-info`);
         if (res.ok) {
           const data = await res.json();
           studentUrl = data.studentUrl;
           console.log('Got student URL from API:', studentUrl);
+        } else {
+          console.warn('API response not ok:', res.status, res.statusText);
         }
       } catch (err) {
         console.warn('Failed to fetch connection info:', err);
       }
 
-      // Fallback: construct URL manually
+      // Fallback: construct URL manually using network IP detection
       if (!studentUrl) {
-        const hostname = window.location.hostname;
-        studentUrl = `http://${hostname}:3000/student.html`;
+        // Try to get network IP by connecting to a known external service
+        // This helps when the API call fails
+        let networkIP = 'localhost';
+        try {
+          // Use WebRTC to detect local IP (works in most browsers)
+          networkIP = await this.detectNetworkIP() || 'localhost';
+        } catch (e) {
+          console.warn('Could not detect network IP:', e);
+        }
+        studentUrl = `http://${networkIP}:3000/student.html`;
         console.log('Using fallback student URL:', studentUrl);
       }
 
@@ -133,6 +145,45 @@ export class QRCodeManager {
         console.error('Failed to copy URL:', err);
       }
     }
+  }
+
+  /**
+   * Detect the local network IP using WebRTC
+   * This is a fallback when the server API is unavailable
+   * @returns {Promise<string|null>} The detected IP or null
+   */
+  async detectNetworkIP() {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(null), 2000);
+      
+      try {
+        const rtc = new RTCPeerConnection({ iceServers: [] });
+        rtc.createDataChannel('');
+        
+        rtc.onicecandidate = (event) => {
+          if (event.candidate) {
+            const candidate = event.candidate.candidate;
+            // Extract IP from candidate string
+            const ipMatch = candidate.match(/(\d{1,3}\.){3}\d{1,3}/);
+            if (ipMatch && !ipMatch[0].startsWith('127.')) {
+              clearTimeout(timeout);
+              rtc.close();
+              resolve(ipMatch[0]);
+            }
+          }
+        };
+        
+        rtc.createOffer()
+          .then(offer => rtc.setLocalDescription(offer))
+          .catch(() => {
+            clearTimeout(timeout);
+            resolve(null);
+          });
+      } catch (e) {
+        clearTimeout(timeout);
+        resolve(null);
+      }
+    });
   }
 
   /**

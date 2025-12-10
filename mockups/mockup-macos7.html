@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveSub Classroom - Mac OS 7 Style Mockup</title>
+    <style>
+        /* Mac OS 7 inspired styles */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --mac-bg: #c0c0c0;
+            --mac-dark: #808080;
+            --mac-darker: #404040;
+            --mac-light: #ffffff;
+            --mac-highlight: #000080;
+            --mac-text: #000000;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    #c0c0c0,
+                    #c0c0c0 2px,
+                    #d4d4d4 2px,
+                    #d4d4d4 4px
+                );
+            font-family: 'Chicago', 'VT323', 'Monaco', monospace;
+            font-size: 14px;
+            min-height: 100vh;
+        }
+        
+        /* Classic Mac Window */
+        .mac-window {
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light),
+                4px 4px 0 rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+        }
+        
+        /* Title bar with horizontal stripes */
+        .mac-titlebar {
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    var(--mac-light) 0px,
+                    var(--mac-light) 2px,
+                    var(--mac-bg) 2px,
+                    var(--mac-bg) 4px
+                );
+            border-bottom: 2px solid var(--mac-text);
+            padding: 4px 8px;
+            display: flex;
+            align-items: center;
+            height: 24px;
+        }
+        
+        .mac-close-box {
+            width: 14px;
+            height: 14px;
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -1px -1px 0 var(--mac-dark),
+                inset 1px 1px 0 var(--mac-light);
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .mac-close-box:active {
+            box-shadow: 
+                inset 1px 1px 0 var(--mac-dark),
+                inset -1px -1px 0 var(--mac-light);
+        }
+        
+        .mac-title {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            text-shadow: 1px 1px 0 var(--mac-light);
+        }
+        
+        .mac-window-content {
+            padding: 12px;
+        }
+        
+        /* Classic Mac Button */
+        .mac-btn {
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light);
+            padding: 6px 16px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        
+        .mac-btn:active {
+            box-shadow: 
+                inset 2px 2px 0 var(--mac-dark),
+                inset -2px -2px 0 var(--mac-light);
+        }
+        
+        .mac-btn:disabled {
+            color: var(--mac-dark);
+        }
+        
+        .mac-btn-primary {
+            background: var(--mac-text);
+            color: var(--mac-light);
+            box-shadow: 
+                inset -2px -2px 0 #000,
+                inset 2px 2px 0 #666,
+                3px 3px 0 var(--mac-dark);
+            border-radius: 6px;
+            padding: 8px 20px;
+        }
+        
+        .mac-btn-primary:active {
+            box-shadow: 
+                inset 2px 2px 0 #000,
+                inset -2px -2px 0 #666;
+        }
+        
+        /* Classic Mac Select/Dropdown */
+        .mac-select {
+            background: var(--mac-light);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -1px -1px 0 var(--mac-dark),
+                inset 1px 1px 0 var(--mac-light);
+            padding: 4px 24px 4px 8px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 4 L6 8 L10 4' stroke='black' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+        }
+        
+        /* Classic Mac Text Input */
+        .mac-input {
+            background: var(--mac-light);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset 1px 1px 0 var(--mac-dark),
+                inset -1px -1px 0 var(--mac-light);
+            padding: 4px 8px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header Bar */
+        .header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light);
+        }
+        
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-title h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .header-title span {
+            font-size: 12px;
+            color: var(--mac-darker);
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .control-group label {
+            font-size: 12px;
+        }
+        
+        /* Caption Display Area */
+        .caption-area {
+            background: var(--mac-light);
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset 2px 2px 0 var(--mac-dark),
+                inset -2px -2px 0 var(--mac-light);
+        }
+        
+        .caption-text {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.3;
+        }
+        
+        /* Transcript Area */
+        .transcript-header {
+            background: var(--mac-bg);
+            padding: 8px 12px;
+            border-bottom: 2px solid var(--mac-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .transcript-header h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .transcript-header .line-count {
+            font-size: 12px;
+            color: var(--mac-darker);
+        }
+        
+        .transcript-header .hint {
+            font-size: 11px;
+            color: var(--mac-dark);
+        }
+        
+        .transcript-content {
+            background: var(--mac-light);
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 12px;
+            border: 2px solid var(--mac-text);
+            border-top: none;
+            box-shadow: 
+                inset 2px 2px 0 var(--mac-dark),
+                inset -2px -2px 0 var(--mac-light);
+        }
+        
+        /* Classic Mac Scrollbar */
+        .transcript-content::-webkit-scrollbar {
+            width: 16px;
+        }
+        
+        .transcript-content::-webkit-scrollbar-track {
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    var(--mac-bg) 0px,
+                    var(--mac-bg) 1px,
+                    var(--mac-light) 1px,
+                    var(--mac-light) 2px
+                );
+            border-left: 2px solid var(--mac-text);
+        }
+        
+        .transcript-content::-webkit-scrollbar-thumb {
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light);
+        }
+        
+        .transcript-line {
+            padding: 4px 8px;
+            margin: 2px 0;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .transcript-line:hover {
+            background: var(--mac-highlight);
+            color: var(--mac-light);
+            border: 1px dotted var(--mac-text);
+        }
+        
+        /* Sidebar Toggle */
+        .sidebar-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light),
+                3px 3px 0 rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .sidebar-toggle:active {
+            box-shadow: 
+                inset 2px 2px 0 var(--mac-dark),
+                inset -2px -2px 0 var(--mac-light);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light),
+                6px 6px 0 rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        
+        .sidebar-content {
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .saved-word {
+            background: var(--mac-light);
+            border: 1px solid var(--mac-text);
+            padding: 8px;
+            margin-bottom: 8px;
+            box-shadow: 
+                inset -1px -1px 0 var(--mac-dark),
+                inset 1px 1px 0 var(--mac-light);
+        }
+        
+        .saved-word-english {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .saved-word-translation {
+            font-size: 13px;
+            color: var(--mac-darker);
+        }
+        
+        /* Translation Popover */
+        .popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--mac-bg);
+            border: 2px solid var(--mac-text);
+            box-shadow: 
+                inset -2px -2px 0 var(--mac-dark),
+                inset 2px 2px 0 var(--mac-light),
+                6px 6px 0 rgba(0,0,0,0.4);
+            padding: 0;
+            z-index: 200;
+            min-width: 250px;
+        }
+        
+        .popover-content {
+            padding: 16px;
+        }
+        
+        .popover-word {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--mac-dark);
+        }
+        
+        .popover-translation {
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        
+        .popover-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        /* Icon styling */
+        .icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        
+        /* Status indicator */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--mac-light);
+            border: 1px solid var(--mac-text);
+            font-size: 12px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00aa00;
+            border: 1px solid var(--mac-text);
+        }
+        
+        .status-dot.inactive {
+            background: var(--mac-dark);
+        }
+        
+        /* Divider */
+        .mac-divider {
+            height: 2px;
+            background: var(--mac-dark);
+            margin: 8px 0;
+            box-shadow: 0 1px 0 var(--mac-light);
+        }
+        
+        /* QR Modal */
+        .qr-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 300;
+        }
+        
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: var(--mac-light);
+            border: 2px solid var(--mac-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px auto;
+            box-shadow: 
+                inset 2px 2px 0 var(--mac-dark);
+        }
+        
+        .qr-placeholder-text {
+            color: var(--mac-dark);
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Menu Bar -->
+        <div class="header-bar">
+            <div class="header-title">
+                <h1>📚 LiveSub Classroom</h1>
+                <span>EFL Teaching Assistant</span>
+                <div class="status-indicator">
+                    <span class="status-dot inactive"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <button class="mac-btn mac-btn-primary">▶ Start</button>
+                <button class="mac-btn" disabled>⏸ Pause Display</button>
+                <button class="mac-btn">🗑 Clear Screen</button>
+                <button class="mac-btn">💾 Download .txt</button>
+                
+                <div class="mac-divider" style="width: 1px; height: 24px; margin: 0 8px;"></div>
+                
+                <div class="control-group">
+                    <label>Listen for:</label>
+                    <select class="mac-select">
+                        <option value="en-US">English</option>
+                        <option value="th-TH">Thai (ไทย)</option>
+                        <option value="zh-CN">Chinese (中文)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Translate to:</label>
+                    <select class="mac-select">
+                        <option value="th">Thai (ไทย)</option>
+                        <option value="zh">Chinese (中文)</option>
+                    </select>
+                </div>
+                
+                <button class="mac-btn">📱 QR Code</button>
+            </div>
+        </div>
+
+        <!-- Main Caption Window -->
+        <div class="mac-window">
+            <div class="mac-titlebar">
+                <div class="mac-close-box"></div>
+                <div class="mac-title">Live Caption</div>
+            </div>
+            <div class="mac-window-content">
+                <div class="caption-area">
+                    <div class="caption-text">
+                        Click "Start" to begin speech recognition...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transcript Window -->
+        <div class="mac-window">
+            <div class="mac-titlebar">
+                <div class="mac-close-box"></div>
+                <div class="mac-title">Transcript</div>
+            </div>
+            <div class="transcript-header">
+                <div>
+                    <span class="line-count">3 lines</span>
+                </div>
+                <div class="hint">
+                    Click any word to translate • Scroll up for history
+                </div>
+            </div>
+            <div class="transcript-content">
+                <div class="transcript-line">
+                    Hello everyone, welcome to today's English lesson.
+                </div>
+                <div class="transcript-line">
+                    Today we're going to learn about vocabulary building.
+                </div>
+                <div class="transcript-line">
+                    Please feel free to ask questions at any time.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        📖
+    </button>
+
+    <!-- My Words Sidebar -->
+    <div class="sidebar" id="sidebar" style="display: none;">
+        <div class="mac-titlebar">
+            <div class="mac-close-box" onclick="toggleSidebar()"></div>
+            <div class="mac-title">My Words</div>
+        </div>
+        <div class="sidebar-content">
+            <div class="saved-word">
+                <div class="saved-word-english">vocabulary</div>
+                <div class="saved-word-translation">คำศัพท์</div>
+            </div>
+            <div class="saved-word">
+                <div class="saved-word-english">lesson</div>
+                <div class="saved-word-translation">บทเรียน</div>
+            </div>
+            <div class="saved-word">
+                <div class="saved-word-english">questions</div>
+                <div class="saved-word-translation">คำถาม</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Translation Popover -->
+    <div class="popover" id="popover" style="display: none;">
+        <div class="mac-titlebar">
+            <div class="mac-close-box" onclick="hidePopover()"></div>
+            <div class="mac-title">Translation</div>
+        </div>
+        <div class="popover-content">
+            <div class="popover-word">vocabulary</div>
+            <div class="popover-translation">คำศัพท์ (kam-sap)</div>
+            <div class="popover-buttons">
+                <button class="mac-btn" onclick="hidePopover()">Cancel</button>
+                <button class="mac-btn mac-btn-primary">Save Word</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="mac-window qr-modal" id="qrModal" style="display: none;">
+        <div class="mac-titlebar">
+            <div class="mac-close-box" onclick="hideQR()"></div>
+            <div class="mac-title">Student Connection</div>
+        </div>
+        <div class="mac-window-content" style="text-align: center;">
+            <p style="margin: 0 0 8px 0; font-weight: bold;">Scan to Connect</p>
+            <div class="qr-placeholder">
+                <div class="qr-placeholder-text">
+                    [QR Code]<br>
+                    Would appear here
+                </div>
+            </div>
+            <p style="margin: 8px 0; font-size: 12px;">
+                Students: Open camera app and scan this code
+            </p>
+            <button class="mac-btn" onclick="hideQR()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple interactivity for mockup demo
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function hidePopover() {
+            document.getElementById('popover').style.display = 'none';
+        }
+        
+        function hideQR() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+        
+        // Show popover when clicking transcript lines
+        document.querySelectorAll('.transcript-line').forEach(line => {
+            line.addEventListener('click', () => {
+                document.getElementById('popover').style.display = 'block';
+            });
+        });
+        
+        // QR button
+        document.querySelector('.mac-btn:last-of-type').addEventListener('click', () => {
+            document.getElementById('qrModal').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
+
