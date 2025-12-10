@@ -282,31 +282,19 @@ class LiveSubApp {
      */
     updateUI(state) {
         const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
         const liveCaption = document.getElementById('liveCaption');
 
-        if (!startBtn || !pauseBtn || !liveCaption) return;
+        if (!startBtn || !liveCaption) return;
 
         switch (state) {
             case 'recording':
                 startBtn.textContent = 'Stop';
-                startBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors';
-                if (pauseBtn instanceof HTMLButtonElement) {
-                    pauseBtn.disabled = false;
-                }
+                startBtn.className = 'bg-white text-purple-500 border-2 border-purple-400 px-4 py-2 rounded-lg font-medium transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)]';
                 break;
             case 'stopped':
                 startBtn.textContent = 'Start';
-                startBtn.className = 'bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors';
-                if (pauseBtn instanceof HTMLButtonElement) {
-                    pauseBtn.disabled = true;
-                }
+                startBtn.className = 'btn-neon text-white px-4 py-2 rounded-lg font-medium';
                 liveCaption.textContent = this.directionTexts[this.recognitionLang] || this.directionTexts['en-US'];
-                break;
-            case 'paused':
-                if (pauseBtn instanceof HTMLButtonElement) {
-                    pauseBtn.textContent = this.isPaused ? 'Resume Display' : 'Pause Display';
-                }
                 break;
         }
     }
@@ -323,11 +311,6 @@ class LiveSubApp {
             } else {
                 this.startRecording();
             }
-        });
-
-        // Pause button
-        document.getElementById('pauseBtn').addEventListener('click', () => {
-            this.togglePause();
         });
 
         // Clear button

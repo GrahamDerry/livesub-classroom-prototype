@@ -76,12 +76,12 @@ export class TranscriptManager {
                 
                 const clearBtn = document.createElement('button');
                 clearBtn.textContent = 'Clear Test';
-                clearBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors';
+                clearBtn.className = 'bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors';
                 clearBtn.onclick = () => this.clear();
                 
                 const scrollTestBtn = document.createElement('button');
                 scrollTestBtn.textContent = 'Test Scroll';
-                scrollTestBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors';
+                scrollTestBtn.className = 'bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors';
                 scrollTestBtn.onclick = () => this.testScrolling();
                 
                 testContainer.appendChild(testBtn);
